@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bookmarks</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #f8f9fa;
+      --surface:   #ffffff;
+      --border:    #e8e8e8;
+      --text:      #111;
+      --muted:     #888;
+      --subtle:    #555;
+      --hover-bg:  #f0f0f0;
+      --accent:    #111;
+      --accent-fg: #fff;
+      --danger:    #e53e3e;
+      --danger-bg: #fff5f5;
+      --radius:    10px;
+      --shadow:    0 1px 4px rgba(0,0,0,.08);
+    }
+
+    body.dark {
+      --bg:        #0f1117;
+      --surface:   #1a1d27;
+      --border:    #2a2d3a;
+      --text:      #e0e0e0;
+      --muted:     #555;
+      --subtle:    #aaa;
+      --hover-bg:  #2a2d3a;
+      --accent:    #f0f0f0;
+      --accent-fg: #111;
+      --danger:    #fc8181;
+      --danger-bg: #2d1515;
+      --shadow:    0 1px 4px rgba(0,0,0,.4);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .2s, color .2s;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      transition: background .2s, border-color .2s;
+    }
+
+    .header-inner {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-inner h1 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    #theme-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: .95rem;
+      color: var(--subtle);
+      transition: border-color .15s, color .15s;
+      line-height: 1;
+    }
+    #theme-btn:hover { border-color: var(--subtle); color: var(--text); }
+
+    /* ── Main layout ── */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Add form ── */
+    .add-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px;
+      margin-bottom: 32px;
+      transition: background .2s, border-color .2s;
+    }
+
+    .add-card h2 {
+      font-size: .8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 500px) { .form-row { grid-template-columns: 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 5px; }
+
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--subtle);
+    }
+
+    input[type="text"],
+    input[type="url"] {
+      padding: 9px 13px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, background .2s, color .2s;
+    }
+
+    input:focus { border-color: var(--accent); }
+    input::placeholder { color: var(--muted); }
+
+    .add-btn {
+      width: 100%;
+      padding: 10px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .add-btn:hover { opacity: .85; }
+    .add-btn:active { opacity: .7; }
+
+    /* ── Error message ── */
+    .error {
+      display: none;
+      font-size: .8rem;
+      color: var(--danger);
+      margin-top: 8px;
+    }
+    .error.show { display: block; }
+
+    /* ── List header ── */
+    .list-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .list-header h2 {
+      font-size: .8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      color: var(--muted);
+    }
+
+    #count-badge {
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      background: var(--hover-bg);
+      padding: 2px 8px;
+      border-radius: 99px;
+      transition: background .2s;
+    }
+
+    /* ── Search ── */
+    .search-wrap {
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    #search {
+      width: 100%;
+      padding: 10px 36px 10px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      font-family: inherit;
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, background .2s, color .2s;
+    }
+
+    #search:focus { border-color: var(--accent); }
+    #search::placeholder { color: var(--muted); }
+
+    #search-clear {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      padding: 4px;
+      border-radius: 4px;
+      display: none;
+      line-height: 1;
+      transition: color .15s;
+    }
+    #search-clear:hover { color: var(--text); }
+    #search-clear.visible { display: block; }
+
+    /* matched text highlight */
+    mark {
+      background: #fef08a;
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+    body.dark mark { background: #713f12; }
+
+    /* ── Empty state ── */
+    #empty {
+      text-align: center;
+      padding: 48px 0;
+      color: var(--muted);
+      display: none;
+    }
+
+    #empty svg { margin-bottom: 12px; opacity: .35; }
+    #empty p { font-size: .9rem; }
+
+    /* ── Bookmark list ── */
+    #list { display: flex; flex-direction: column; gap: 8px; }
+
+    .bookmark {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: background .2s, border-color .2s, box-shadow .15s;
+      animation: slide-in .18s ease;
+    }
+
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .bookmark:hover {
+      box-shadow: 0 3px 10px rgba(0,0,0,.1);
+    }
+
+    .favicon {
+      width: 24px;
+      height: 24px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      object-fit: contain;
+      background: var(--hover-bg);
+    }
+
+    .bookmark-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .bookmark-title {
+      font-size: .9rem;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    .bookmark-url {
+      font-size: .775rem;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-decoration: none;
+    }
+
+    .bookmark-url:hover { color: var(--subtle); text-decoration: underline; }
+
+    .open-btn {
+      flex-shrink: 0;
+      padding: 6px 12px;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--subtle);
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color .15s, color .15s, background .15s;
+      white-space: nowrap;
+    }
+    .open-btn:hover {
+      border-color: var(--subtle);
+      color: var(--text);
+      background: var(--hover-bg);
+    }
+
+    .del-btn {
+      flex-shrink: 0;
+      width: 30px;
+      height: 30px;
+      background: none;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s, color .15s;
+      padding: 0;
+    }
+    .del-btn:hover { background: var(--danger-bg); color: var(--danger); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <h1>🔖 Bookmarks</h1>
+      <button id="theme-btn">🌙</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Add form -->
+    <div class="add-card">
+      <h2>New Bookmark</h2>
+      <div class="form-row">
+        <div class="field">
+          <label for="inp-title">Title</label>
+          <input id="inp-title" type="text" placeholder="My favourite site" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="inp-url">URL</label>
+          <input id="inp-url" type="url" placeholder="https://example.com" autocomplete="off">
+        </div>
+      </div>
+      <button class="add-btn" id="add-btn">Add Bookmark</button>
+      <p class="error" id="error-msg">Please enter both a title and a valid URL.</p>
+    </div>
+
+    <!-- Search -->
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input id="search" type="text" placeholder="Search bookmarks…" autocomplete="off">
+      <button id="search-clear" title="Clear search">✕</button>
+    </div>
+
+    <!-- List -->
+    <div class="list-header">
+      <h2>Saved</h2>
+      <span id="count-badge">0</span>
+    </div>
+
+    <div id="empty">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+      </svg>
+      <p id="empty-msg">No bookmarks yet. Add one above.</p>
+    </div>
+
+    <div id="list"></div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = 'bookmarks_v1';
+
+    // ── State ──────────────────────────────────────
+    let bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    let query = '';
+
+    function save() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(bookmarks));
+    }
+
+    // ── Helpers ────────────────────────────────────
+    function faviconUrl(url) {
+      try {
+        const origin = new URL(url).origin;
+        return `https://www.google.com/s2/favicons?sz=32&domain=${origin}`;
+      } catch { return ''; }
+    }
+
+    function normaliseUrl(raw) {
+      const s = raw.trim();
+      if (!s) return '';
+      return /^https?:\/\//i.test(s) ? s : 'https://' + s;
+    }
+
+    function isValidUrl(s) {
+      try { new URL(s); return true; } catch { return false; }
+    }
+
+    // ── Render ─────────────────────────────────────
+    function highlight(text, q) {
+      if (!q) return esc(text);
+      const idx = text.toLowerCase().indexOf(q.toLowerCase());
+      if (idx === -1) return esc(text);
+      return esc(text.slice(0, idx))
+        + '<mark>' + esc(text.slice(idx, idx + q.length)) + '</mark>'
+        + esc(text.slice(idx + q.length));
+    }
+
+    function render() {
+      const list  = document.getElementById('list');
+      const empty = document.getElementById('empty');
+      const badge = document.getElementById('count-badge');
+      const emptyMsg = document.getElementById('empty-msg');
+
+      const filtered = query
+        ? bookmarks.filter(bm => bm.title.toLowerCase().includes(query.toLowerCase()))
+        : bookmarks;
+
+      badge.textContent = query
+        ? `${filtered.length} / ${bookmarks.length}`
+        : bookmarks.length;
+
+      const isEmpty = filtered.length === 0;
+      empty.style.display = isEmpty ? 'block' : 'none';
+      if (isEmpty) {
+        emptyMsg.textContent = query
+          ? `No results for "${query}".`
+          : 'No bookmarks yet. Add one above.';
+      }
+
+      list.innerHTML = '';
+      filtered.forEach((bm, i) => {
+        const realIndex = bookmarks.indexOf(bm);
+        const el = document.createElement('div');
+        el.className = 'bookmark';
+        el.innerHTML = `
+          <img class="favicon" src="${faviconUrl(bm.url)}" alt="" onerror="this.style.display='none'">
+          <div class="bookmark-info">
+            <div class="bookmark-title" title="${esc(bm.title)}">${highlight(bm.title, query)}</div>
+            <a class="bookmark-url" href="${esc(bm.url)}" target="_blank" rel="noopener"
+               title="${esc(bm.url)}">${esc(bm.url)}</a>
+          </div>
+          <a class="open-btn" href="${esc(bm.url)}" target="_blank" rel="noopener">Open ↗</a>
+          <button class="del-btn" data-i="${realIndex}" title="Delete">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+          </button>`;
+        list.appendChild(el);
+      });
+    }
+
+    function esc(s) {
+      return String(s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    // ── Add ────────────────────────────────────────
+    document.getElementById('add-btn').addEventListener('click', () => {
+      const titleEl = document.getElementById('inp-title');
+      const urlEl   = document.getElementById('inp-url');
+      const errEl   = document.getElementById('error-msg');
+      const url     = normaliseUrl(urlEl.value);
+
+      if (!titleEl.value.trim() || !isValidUrl(url)) {
+        errEl.classList.add('show');
+        return;
+      }
+
+      errEl.classList.remove('show');
+      bookmarks.unshift({ title: titleEl.value.trim(), url, id: Date.now() });
+      save();
+      render();
+      titleEl.value = '';
+      urlEl.value   = '';
+      titleEl.focus();
+    });
+
+    // Enter key submits form
+    [document.getElementById('inp-title'), document.getElementById('inp-url')]
+      .forEach(el => el.addEventListener('keydown', e => {
+        if (e.key === 'Enter') document.getElementById('add-btn').click();
+      }));
+
+    // ── Delete ─────────────────────────────────────
+    document.getElementById('list').addEventListener('click', e => {
+      const btn = e.target.closest('.del-btn');
+      if (!btn) return;
+      const i = Number(btn.dataset.i);
+      bookmarks.splice(i, 1);
+      save();
+      render();
+    });
+
+    // ── Search ─────────────────────────────────────
+    const searchEl = document.getElementById('search');
+    const clearBtn = document.getElementById('search-clear');
+
+    searchEl.addEventListener('input', () => {
+      query = searchEl.value;
+      clearBtn.classList.toggle('visible', query.length > 0);
+      render();
+    });
+
+    clearBtn.addEventListener('click', () => {
+      searchEl.value = '';
+      query = '';
+      clearBtn.classList.remove('visible');
+      searchEl.focus();
+      render();
+    });
+
+    // ── Dark mode ──────────────────────────────────
+    const themeBtn = document.getElementById('theme-btn');
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      themeBtn.textContent = '☀️';
+    }
+    themeBtn.addEventListener('click', () => {
+      const dark = document.body.classList.toggle('dark');
+      themeBtn.textContent = dark ? '☀️' : '🌙';
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
+
+    // ── Init ───────────────────────────────────────
+    render();
+  </script>
+
+</body>
+</html>

@@ -1,15 +1,130 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-TW">
 <head>
-  <title>My First Server</title>
-  <style>
-    body { font-family: sans-serif; max-width: 600px; margin: 50px auto; }
-    h1 { color: #333; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Server</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Welcome to My Server</h1>
-  <p>This page is being served by Node.js and Express.</p>
-  <p>I built this myself.</p>
+
+  <nav>
+    <div class="nav-inner">
+      <a href="#" class="nav-brand" data-target="home">MyServer</a>
+      <ul class="nav-links">
+        <li><a href="#" data-target="home" class="active">Home</a></li>
+        <li><a href="#" data-target="about">About</a></li>
+        <li><a href="#" data-target="contact">Contact</a></li>
+      </ul>
+      <button id="theme-toggle" title="Toggle dark mode">🌙</button>
+    </div>
+  </nav>
+
+  <section id="home" class="active">
+    <span class="badge">Welcome</span>
+    <h1>Hello, World.</h1>
+    <p>This page is served by Node.js and Express. Clean, fast, and ready to grow into whatever you need.</p>
+  </section>
+
+  <section id="about">
+    <span class="badge">About</span>
+    <h1>About This Project</h1>
+    <p>Built from scratch with Node.js and Express. This is my first server — a starting point for learning how the web works under the hood.</p>
+  </section>
+
+  <section id="contact">
+    <span class="badge">Contact</span>
+    <h1>Get in Touch</h1>
+    <p>Have a question or just want to say hi? Fill in the form below.</p>
+    <form id="contact-form" novalidate>
+      <div class="field">
+        <label for="inp-name">Name <span class="required">*</span></label>
+        <input id="inp-name" type="text" placeholder="Your name" autocomplete="name">
+        <span class="field-error" id="err-name"></span>
+      </div>
+      <div class="field">
+        <label for="inp-email">Email <span class="required">*</span></label>
+        <input id="inp-email" type="email" placeholder="you@example.com" autocomplete="email">
+        <span class="field-error" id="err-email"></span>
+      </div>
+      <div class="field">
+        <label for="inp-message">Message</label>
+        <textarea id="inp-message" placeholder="Write something..."></textarea>
+      </div>
+      <button type="submit">Send</button>
+    </form>
+  </section>
+
+  <footer>
+    <div class="footer-inner">
+      <span>© 2024 MyServer. All rights reserved.</span>
+      <a href="https://github.com" target="_blank" rel="noopener">GitHub</a>
+    </div>
+  </footer>
+
+  <script>
+    // Section switching
+    document.querySelectorAll('[data-target]').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = link.dataset.target;
+        document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+        document.getElementById(target).classList.add('active');
+        document.querySelector(`.nav-links a[data-target="${target}"]`).classList.add('active');
+      });
+    });
+
+    // Contact form validation
+    const contactForm = document.getElementById('contact-form');
+
+    const validators = {
+      'inp-name':  v => v.trim().length >= 2   ? '' : 'Please enter your name.',
+      'inp-email': v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? '' : 'Please enter a valid email address.',
+    };
+
+    function validateField(id) {
+      if (!validators[id]) return true;
+      const input = document.getElementById(id);
+      const errEl = document.getElementById('err-' + id.replace('inp-', ''));
+      const msg   = validators[id](input.value);
+      errEl.textContent = msg;
+      input.classList.toggle('invalid', !!msg);
+      return !msg;
+    }
+
+    Object.keys(validators).forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('blur', () => validateField(id));
+      el.addEventListener('input', () => { if (el.classList.contains('invalid')) validateField(id); });
+    });
+
+    contactForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const ok = Object.keys(validators).map(validateField).every(Boolean);
+      if (!ok) return;
+      contactForm.reset();
+      Object.keys(validators).forEach(id => {
+        document.getElementById(id).classList.remove('invalid');
+        document.getElementById('err-' + id.replace('inp-', '')).textContent = '';
+      });
+      const btn = contactForm.querySelector('button[type="submit"]');
+      btn.textContent = 'Sent ✓';
+      setTimeout(() => { btn.textContent = 'Send'; }, 2500);
+    });
+
+    // Dark mode toggle — persists via localStorage
+    const toggle = document.getElementById('theme-toggle');
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      toggle.textContent = '☀️';
+    }
+    toggle.addEventListener('click', () => {
+      const isDark = document.body.classList.toggle('dark');
+      toggle.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    });
+  </script>
+
 </body>
 </html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f8f9fa;
+      --surface:  #ffffff;
+      --border:   #e8e8e8;
+      --text:     #111;
+      --muted:    #888;
+      --subtle:   #555;
+      --hover-bg: #f0f0f0;
+      --accent:   #111;
+      --accent-fg:#fff;
+      --error:    #e53e3e;
+      --error-bg: #fff5f5;
+      --success:  #2f855a;
+      --success-bg:#f0fff4;
+      --radius:   10px;
+      --shadow:   0 1px 4px rgba(0,0,0,.08);
+    }
+
+    body.dark {
+      --bg:       #0f1117;
+      --surface:  #1a1d27;
+      --border:   #2a2d3a;
+      --text:     #e0e0e0;
+      --muted:    #555;
+      --subtle:   #aaa;
+      --hover-bg: #2a2d3a;
+      --accent:   #f0f0f0;
+      --accent-fg:#111;
+      --error:    #fc8181;
+      --error-bg: #2d1515;
+      --success:  #68d391;
+      --success-bg:#1a2d1f;
+      --shadow:   0 1px 4px rgba(0,0,0,.4);
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      transition: background .2s, color .2s;
+    }
+
+    /* ── Header ── */
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      transition: background .2s, border-color .2s;
+    }
+
+    .header-inner {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-inner a {
+      font-size: .875rem;
+      font-weight: 500;
+      color: var(--subtle);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color .15s;
+    }
+    .header-inner a:hover { color: var(--text); }
+
+    .header-inner h1 { font-size: 1rem; font-weight: 700; }
+
+    #theme-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: .95rem;
+      color: var(--subtle);
+      transition: border-color .15s, color .15s;
+      line-height: 1;
+    }
+    #theme-btn:hover { border-color: var(--subtle); color: var(--text); }
+
+    /* ── Main ── */
+    main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -.5px;
+      margin-bottom: 8px;
+    }
+
+    .page-sub {
+      font-size: 1rem;
+      color: var(--subtle);
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 32px;
+      transition: background .2s, border-color .2s;
+    }
+
+    /* ── Form fields ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px 20px;
+    }
+
+    @media (max-width: 480px) { .form-grid { grid-template-columns: 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--subtle);
+      letter-spacing: .2px;
+    }
+
+    .required { color: var(--error); margin-left: 2px; }
+
+    input[type="text"],
+    input[type="email"],
+    textarea {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: .9rem;
+      font-family: inherit;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s, background .2s, color .2s, box-shadow .15s;
+    }
+
+    input:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+    }
+
+    body.dark input:focus, body.dark textarea:focus {
+      box-shadow: 0 0 0 3px rgba(255,255,255,.06);
+    }
+
+    input::placeholder, textarea::placeholder { color: var(--muted); }
+
+    input.invalid, textarea.invalid { border-color: var(--error); }
+
+    textarea { resize: vertical; min-height: 140px; }
+
+    /* ── Field error ── */
+    .field-error {
+      font-size: .75rem;
+      color: var(--error);
+      min-height: 16px;
+    }
+
+    /* ── Character counter ── */
+    .char-counter {
+      font-size: .75rem;
+      color: var(--muted);
+      text-align: right;
+    }
+    .char-counter.warn { color: var(--error); }
+
+    /* ── Submit row ── */
+    .submit-row {
+      margin-top: 28px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .submit-btn {
+      padding: 11px 32px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: 8px;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity .15s;
+      white-space: nowrap;
+    }
+    .submit-btn:hover { opacity: .85; }
+    .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .submit-note {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+
+    /* ── Success / error banners ── */
+    .banner {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: .875rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+      animation: fadein .2s ease;
+    }
+    @keyframes fadein { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+
+    .banner.success { display: flex; background: var(--success-bg); color: var(--success); gap: 8px; }
+    .banner.fail    { display: flex; background: var(--error-bg);   color: var(--error);   gap: 8px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-inner">
+      <a href="/">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"/>
+        </svg>
+        Back
+      </a>
+      <h1>Contact</h1>
+      <button id="theme-btn">🌙</button>
+    </div>
+  </header>
+
+  <main>
+    <h2 class="page-title">Get in touch</h2>
+    <p class="page-sub">Have a question or just want to say hi? Fill in the form and I'll get back to you as soon as possible.</p>
+
+    <div class="banner" id="banner-success">
+      ✅ Message sent! I'll get back to you soon.
+    </div>
+    <div class="banner" id="banner-fail">
+      ❌ Something went wrong. Please try again.
+    </div>
+
+    <div class="card">
+      <form id="contact-form" novalidate>
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="name">Name <span class="required">*</span></label>
+            <input id="name" name="name" type="text" placeholder="Jane Smith" autocomplete="name">
+            <span class="field-error" id="err-name"></span>
+          </div>
+
+          <div class="field">
+            <label for="email">Email <span class="required">*</span></label>
+            <input id="email" name="email" type="email" placeholder="jane@example.com" autocomplete="email">
+            <span class="field-error" id="err-email"></span>
+          </div>
+
+          <div class="field full">
+            <label for="message">Message <span class="required">*</span></label>
+            <textarea id="message" name="message" placeholder="Write your message here…" maxlength="1000"></textarea>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span class="field-error" id="err-message"></span>
+              <span class="char-counter" id="char-count">0 / 1000</span>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="submit-row">
+          <button type="submit" class="submit-btn" id="submit-btn">Send Message</button>
+          <span class="submit-note">All fields are required.</span>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script>
+    // ── Validation rules ───────────────────────────
+    const rules = {
+      name:    v => v.trim().length >= 2   ? '' : 'Please enter your name (at least 2 characters).',
+      email:   v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim()) ? '' : 'Please enter a valid email address.',
+      message: v => v.trim().length >= 10  ? '' : 'Message must be at least 10 characters.',
+    };
+
+    function validate(id) {
+      const el  = document.getElementById(id);
+      const err = document.getElementById('err-' + id);
+      const msg = rules[id](el.value);
+      err.textContent = msg;
+      el.classList.toggle('invalid', !!msg);
+      return !msg;
+    }
+
+    // Live validation on blur
+    ['name', 'email', 'message'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('blur', () => validate(id));
+      el.addEventListener('input', () => {
+        if (el.classList.contains('invalid')) validate(id);
+      });
+    });
+
+    // ── Character counter ──────────────────────────
+    const msgEl    = document.getElementById('message');
+    const counter  = document.getElementById('char-count');
+    msgEl.addEventListener('input', () => {
+      const len = msgEl.value.length;
+      counter.textContent = `${len} / 1000`;
+      counter.classList.toggle('warn', len > 900);
+    });
+
+    // ── Submit ─────────────────────────────────────
+    document.getElementById('contact-form').addEventListener('submit', e => {
+      e.preventDefault();
+
+      const valid = ['name', 'email', 'message'].map(validate).every(Boolean);
+      if (!valid) return;
+
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      // Simulate async send (swap for a real fetch() call when you have a backend)
+      setTimeout(() => {
+        const success = true; // toggle to false to test error state
+        showBanner(success);
+        btn.disabled = false;
+        btn.textContent = 'Send Message';
+        if (success) {
+          document.getElementById('contact-form').reset();
+          counter.textContent = '0 / 1000';
+          counter.classList.remove('warn');
+          ['name', 'email', 'message'].forEach(id => {
+            document.getElementById(id).classList.remove('invalid');
+            document.getElementById('err-' + id).textContent = '';
+          });
+        }
+      }, 900);
+    });
+
+    function showBanner(success) {
+      const el = document.getElementById(success ? 'banner-success' : 'banner-fail');
+      el.style.display = 'flex';
+      setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ── Dark mode ──────────────────────────────────
+    const themeBtn = document.getElementById('theme-btn');
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+      themeBtn.textContent = '☀️';
+    }
+    themeBtn.addEventListener('click', () => {
+      const dark = document.body.classList.toggle('dark');
+      themeBtn.textContent = dark ? '☀️' : '🌙';
+      localStorage.setItem('theme', dark ? 'dark' : 'light');
+    });
+  </script>
+
+</body>
+</html>
